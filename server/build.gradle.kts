@@ -44,7 +44,15 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.exposed:exposed-test-utils:0.55.0")
     testImplementation("com.h2database:h2:2.3.232") // In-mem for tests
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("io.mockk:mockk:1.13.10")
 }
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 
 kotlin {
     compilerOptions {
