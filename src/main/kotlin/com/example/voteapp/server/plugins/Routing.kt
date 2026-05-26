@@ -7,18 +7,16 @@ import com.example.voteapp.server.votings.installVotings
 
 
 fun Application.configureRouting() {
-
-
     routing {
         get("/") {
             call.respondText("Voting App Server is running! APIs at /api/v1/votings")
         }
     }
 
-
     // Модули роутинга
     installVotings()
 
 }
+
 
 

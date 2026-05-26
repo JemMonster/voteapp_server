@@ -33,10 +33,11 @@ fun Application.module() {
     }
 
     configureFlyway()
+    configureAuth()
     configureRouting()
     configureMonitoring()
-    // configureAuth() later
 }
+
 
 
 
