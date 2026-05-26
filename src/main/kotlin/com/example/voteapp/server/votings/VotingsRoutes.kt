@@ -1,33 +1,85 @@
 package com.example.voteapp.server.votings
 
+import com.example.voteapp.server.plugins.UserIdPrincipal
+import com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase
+import com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase
 import com.example.voteapp.server.votings.domain.usecase.GetVotingsUseCase
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import com.example.voteapp.server.votings.domain.usecase.VoteUseCase
+import com.example.voteapp.server.votings.models.NewVoting
+import com.example.voteapp.server.votings.models.VotePayload
+import com.example.voteapp.server.votings.models.VotingResult
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.response.header
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
+import io.ktor.server.request.receive
+import io.ktor.server.routing.path
+import io.ktor.server.routing.parameter
+import io.ktor.server.application.call
+import io.ktor.server.routing.respond
+import java.util.UUID
 
-fun Route.v1Votings(getVotingsUseCase: GetVotingsUseCase) {
+fun Route.v1Votings(
+    getVotingsUseCase: GetVotingsUseCase,
+    createVotingUseCase: CreateVotingUseCase,
+    voteUseCase: VoteUseCase,
+    getResultsUseCase: GetResultsUseCase,
+) {
+    get("/votings") {
+        val votings = getVotingsUseCase()
+        call.respond(votings)
+    }
+
     authenticate("firebase-jwt") {
-        route("/votings") {
-            get {
-                // Example of userId extraction from token
-                val userId = call.principal<com.example.voteapp.server.plugins.UserIdPrincipal>()?.name
-                // Not used yet (repository is still shared), but kept for future per-user filtering.
-                val votings = getVotingsUseCase()
-                call.respond(votings)
-            }
+        post("/votings") {
+            val userId = call.principal<UserIdPrincipal>()?.name
+                ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
 
-            // POST /api/v1/votings, /api/v1/votings/{id} later
+            val dto = call.receive<NewVoting>()
+            val created = createVotingUseCase(dto, UUID.fromString(userId))
+
+            call.response.header("Location", "/api/v1/votings/${created.id}")
+            call.respond(created)
+        }
+
+        post("/votings/{id}/vote") {
+            val votingId = UUID.fromString(call.parameters["id"] ?: error("Missing id"))
+
+            val userId = call.principal<UserIdPrincipal>()?.name
+                ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
+
+            val payload = call.receive<VotePayload>()
+            val result = voteUseCase(votingId, UUID.fromString(userId), payload)
+            call.respond(result)
+        }
+
+        get("/votings/{id}/results") {
+            val votingId = UUID.fromString(call.parameters["id"] ?: error("Missing id"))
+            val result = getResultsUseCase(votingId)
+            call.respond(result)
         }
     }
 }
 
-
-fun Application.configureVotingsRouting(getVotingsUseCase: GetVotingsUseCase) {
+fun io.ktor.server.application.Application.configureVotingsRouting(
+    getVotingsUseCase: GetVotingsUseCase,
+    createVotingUseCase: CreateVotingUseCase,
+    voteUseCase: VoteUseCase,
+    getResultsUseCase: GetResultsUseCase,
+) {
     routing {
         route("/api/v1") {
-            v1Votings(getVotingsUseCase)
+            v1Votings(getVotingsUseCase, createVotingUseCase, voteUseCase, getResultsUseCase)
         }
     }
 }
+
 
 
