@@ -9,3 +9,6 @@ class InMemoryVotingRepository : VotingRepository {
     override suspend fun getVotings(): List<Voting> = votingList
 }
 
+// TODO: оставить только для локальной разработки/временного режима
+
+
