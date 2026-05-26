@@ -8,11 +8,10 @@ plugins {
 group = "com.example.voteapp.server"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+
 
 dependencies {
+
     // Ktor
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
@@ -35,8 +34,13 @@ dependencies {
     // Logging
     implementation("ch.qos.logback:logback-classic:1.5.12")
     
+    // Flyway
+    implementation("org.flywaydb:flyway-core:10.24.0")
+    implementation("org.flywaydb:flyway-database-postgresql:10.24.0")
+
     // Test
     testImplementation("io.ktor:ktor-server-tests-jvm")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.exposed:exposed-test-utils:0.55.0")
     testImplementation("com.h2database:h2:2.3.232") // In-mem for tests

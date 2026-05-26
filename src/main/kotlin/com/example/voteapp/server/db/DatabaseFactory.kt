@@ -7,7 +7,9 @@ object DatabaseFactory {
     fun init() {
         val dbUrl = AppConfig.databaseUrl
         Database.connect(dbUrl, driver = "org.postgresql.Driver")
+        // Schema is managed by Flyway migrations.
         createDatabaseSchema()
+
     }
 }
 

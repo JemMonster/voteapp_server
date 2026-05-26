@@ -32,10 +32,15 @@ fun Application.module() {
         )
     }
 
+    configureFlyway()
     configureRouting()
     configureMonitoring()
     // configureAuth() later
 }
+
+
+
+
 
 
 
