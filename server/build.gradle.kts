@@ -40,13 +40,15 @@ dependencies {
 
     // Test
     testImplementation("io.ktor:ktor-server-tests-jvm")
+    testImplementation("io.ktor:ktor-server-test-host:2.3.7")
 
+    testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.exposed:exposed-test-utils:0.55.0")
-    testImplementation("com.h2database:h2:2.3.232") // In-mem for tests
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("com.h2database:h2:2.2.224")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    testImplementation("io.mockk:mockk:1.13.10")
 }
 
 tasks.withType<Test> {
