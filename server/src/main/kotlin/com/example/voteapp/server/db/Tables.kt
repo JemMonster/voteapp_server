@@ -39,8 +39,9 @@ object Votes : Table("votes") {
 }
 
 enum class VotingType {
-    SINGLE, MULTIPLE, PETITION, GIVEAWAY
+    SINGLE_CHOICE, MULTIPLE_CHOICE
 }
+
 
 enum class VotingStatus {
     ACTIVE, CLOSED

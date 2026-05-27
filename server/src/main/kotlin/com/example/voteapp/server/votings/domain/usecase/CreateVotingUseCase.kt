@@ -17,18 +17,23 @@ class CreateVotingUseCase(
             throw ValidationException("Title is required")
         }
 
-        val durationDays = dto.durationDays
-        if (durationDays !in 1..360) {
-            throw ValidationException("Duration must be 1..360 days")
+        val startTime = dto.startTime
+        val endTime = dto.endTime
+        if (endTime <= startTime) {
+            throw ValidationException("endTime must be after startTime")
         }
 
-        if (dto.type == com.example.voteapp.server.votings.models.VotingType.SINGLE ||
-            dto.type == com.example.voteapp.server.votings.models.VotingType.MULTIPLE
+        if (dto.votingType == com.example.voteapp.server.votings.models.VotingType.SINGLE_CHOICE ||
+            dto.votingType == com.example.voteapp.server.votings.models.VotingType.MULTIPLE_CHOICE
         ) {
-            val optionsCount = dto.options?.size ?: 0
+            val optionsCount = dto.options.size
             if (optionsCount < 2) {
                 throw ValidationException("At least 2 options required")
             }
+        }
+
+        if (dto.options.any { it.isBlank() }) {
+            throw ValidationException("Options cannot be blank")
         }
 
         repository.create(dto, creatorId)

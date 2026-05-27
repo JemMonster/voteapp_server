@@ -23,23 +23,17 @@ class VoteUseCase(
         }
 
         when (voting.type) {
-            VotingType.SINGLE -> {
-                val selected = payload.selectedOptionIds
-                if (selected?.size != 1) {
-                    throw ValidationException("Invalid payload for voting type")
+            VotingType.SINGLE_CHOICE -> {
+                val optionId = payload.optionId
+                if (optionId == null) {
+                    throw ValidationException("optionId is required for SINGLE_CHOICE")
                 }
             }
 
-            VotingType.MULTIPLE -> {
-                val selected = payload.selectedOptionIds
-                if (selected?.isNotEmpty() != true) {
-                    throw ValidationException("Invalid payload for voting type")
-                }
-            }
-
-            VotingType.PETITION, VotingType.GIVEAWAY -> {
-                if (payload.isParticipating != true) {
-                    throw ValidationException("Invalid payload for voting type")
+            VotingType.MULTIPLE_CHOICE -> {
+                val optionIds = payload.optionIds
+                if (optionIds.isNullOrEmpty()) {
+                    throw ValidationException("optionIds is required for MULTIPLE_CHOICE")
                 }
             }
         }
@@ -47,5 +41,6 @@ class VoteUseCase(
         return repository.vote(votingId, userId, payload)
     }
 }
+
 
 

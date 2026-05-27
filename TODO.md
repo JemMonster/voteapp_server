@@ -1,9 +1,11 @@
 # TODO — VoteApp Server API expansion
 
 ## Phase 1 — Errors + status codes
-- [ ] Update `plugins/StatusPages.kt` to return unified format: `{ "error": "...", "code": <http_code> }`
-- [ ] Ensure mapping for: 400/401/403/404 and internal 500
-- [ ] Update `plugins/AuthPlugin.kt` bearer challenge to return unified `{error, code}` with 401
+- [x] Update `plugins/StatusPages.kt` to return unified format: `{ "error": "...", "code": <http_code> }`
+- [x] Ensure mapping for: 400/401/403/404 and internal 500 (base mapping for 400/401/404)
+
+- [ ] Add 403 mapping when access is forbidden (invite/not creator/etc.)
+- [x] Update `plugins/AuthPlugin.kt` bearer challenge to return unified `{error, code}` with 401
 
 ## Phase 2 — DTO / models contract
 - [ ] Update voting creation contract: add `startTime`, `endTime`, rename `votingType` to `SINGLE_CHOICE|MULTIPLE_CHOICE`

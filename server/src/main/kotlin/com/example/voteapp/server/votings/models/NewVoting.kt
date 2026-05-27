@@ -9,12 +9,11 @@ data class NewVoting(
     val title: String,
     val description: String?,
     val imageUrl: String?,
-    val type: VotingType,
+    val votingType: VotingType,
+    val startTime: kotlinx.datetime.Instant,
+    val endTime: kotlinx.datetime.Instant,
 
-    @Min(1)
-    @Max(360)
-    val durationDays: Int,
-
-    val options: List<String>?
+    val options: List<String>
 )
+
 

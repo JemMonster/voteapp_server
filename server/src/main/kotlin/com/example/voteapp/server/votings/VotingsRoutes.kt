@@ -43,6 +43,11 @@ fun Route.v1Votings(
                 ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
 
             val dto = call.receive<NewVoting>()
+
+            if (dto.title.isBlank()) {
+                throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Title is required")
+            }
+
             val created = createVotingUseCase(dto, UUID.fromString(userId))
 
             call.response.header("Location", "/api/v1/votings/${created.id}")

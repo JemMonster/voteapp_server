@@ -50,21 +50,20 @@ class ExposedVotingRepository : VotingRepository {
     override suspend fun create(dto: NewVoting, creatorId: UUID): Voting =
         newSuspendedTransaction(Dispatchers.IO) {
             try {
-                val endsAt = Clock.System.now()
-                    .plus(dto.durationDays.toLong(), kotlinx.datetime.DateTimeUnit.DAY)
+                val endsAt = dto.endTime
+                val startAt = dto.startTime
 
                 val votingId = Votings.insertAndGetId { stmt ->
                     stmt[title] = dto.title
                     stmt[description] = dto.description
-                    stmt[type] = dto.type
+                    stmt[type] = dto.votingType
                     stmt[status] = VotingStatus.ACTIVE
                     stmt[imageUrl] = dto.imageUrl
                     stmt[Votings.creatorId] = creatorId
                     stmt[endsAt] = endsAt.toJavaInstant()
                 }
 
-                val options = dto.options ?: emptyList()
-                options.forEach { optionText ->
+                dto.options.forEach { optionText ->
                     VotingOptions.insert { stmt ->
                         stmt[VotingOptions.votingId] = votingId
                         stmt[VotingOptions.text] = optionText
@@ -76,7 +75,7 @@ class ExposedVotingRepository : VotingRepository {
                     id = votingId.value,
                     title = dto.title,
                     description = dto.description.orEmpty(),
-                    type = dto.type,
+                    type = dto.votingType,
                     status = VotingStatus.ACTIVE,
                     imageUrl = dto.imageUrl,
                     endsAt = endsAt.toKotlinLocalDateTime(),
@@ -110,7 +109,10 @@ class ExposedVotingRepository : VotingRepository {
                 throw IllegalStateException("User already voted")
             }
 
-            val optionIdsText = payload.selectedOptionIds?.joinToString(",")
+            val optionIdsText = when (voting.type) {
+                VotingType.SINGLE_CHOICE -> payload.optionId?.toString()
+                VotingType.MULTIPLE_CHOICE -> payload.optionIds?.joinToString(",")
+            }
 
             Votes.insert { stmt ->
                 stmt[Votes.userId] = userId
@@ -131,38 +133,8 @@ class ExposedVotingRepository : VotingRepository {
             val totalParticipants = votes.count().toInt()
 
             when (voting.type) {
-                VotingType.PETITION -> {
-                    VotingResult(
-                        votingId = id.toLongParticipantsId(),
-                        status = status,
-                        type = voting.type,
-                        totalParticipants = totalParticipants,
-                        optionsResults = null,
-                        signaturesCount = totalParticipants,
-                        winnerInfo = null,
-                        signaturesParticipatingCount = totalParticipants,
-                        winnerOptionText = null
-                    )
-                }
-
-                VotingType.GIVEAWAY -> {
-                    val votesList = votes.toList()
-                    val winnerUserId = if (votesList.isNotEmpty()) votesList[random.nextInt(votesList.size)][Votes.userId] else null
-
-                    VotingResult(
-                        votingId = id.toLongParticipantsId(),
-                        status = status,
-                        type = voting.type,
-                        totalParticipants = totalParticipants,
-                        optionsResults = null,
-                        signaturesCount = null,
-                        winnerInfo = winnerUserId?.let { WinnerInfo(it.toString()) },
-                        winnerOptionText = null
-                    )
-                }
-
-                VotingType.SINGLE,
-                VotingType.MULTIPLE -> {
+                VotingType.SINGLE_CHOICE,
+                VotingType.MULTIPLE_CHOICE -> {
                     val options = VotingOptions
                         .select { VotingOptions.votingId eq id }
                         .orderBy(VotingOptions.id to SortOrder.ASC)

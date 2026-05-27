@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class VotePayload(
-    val selectedOptionIds: List<Long>?,
-    val isParticipating: Boolean
+    val optionId: Long?,
+    val optionIds: List<Long>?
 )
+
 
