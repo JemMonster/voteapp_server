@@ -18,12 +18,18 @@ fun main(args: Array<String>) {
     // Firebase Admin SDK init will be triggered lazily by AuthPlugin.
     DatabaseFactory.init()
 
-    embeddedServer(
+    val server = embeddedServer(
         Netty,
         port = AppConfig.port,
         host = AppConfig.host,
         module = Application::module
-    ).start(wait = true)
+    )
+
+    server.start(wait = true)
+
+    runCatching {
+        DatabaseFactory.close()
+    }
 }
 
 fun Application.module() {
@@ -48,6 +54,8 @@ fun Application.module() {
         allowCredentials = true
         allowMethod(io.ktor.http.HttpMethod.Get)
         allowMethod(io.ktor.http.HttpMethod.Post)
+        allowMethod(io.ktor.http.HttpMethod.Put)
+        allowMethod(io.ktor.http.HttpMethod.Delete)
     }
 
     configureFlyway()
@@ -55,12 +63,6 @@ fun Application.module() {
     configureAuth()
     configureRouting()
     configureMonitoring()
-
-    Runtime.getRuntime().addShutdownHook(Thread {
-        runCatching {
-            com.example.voteapp.server.db.DatabaseFactory.init()
-        }
-    })
 }
 
 

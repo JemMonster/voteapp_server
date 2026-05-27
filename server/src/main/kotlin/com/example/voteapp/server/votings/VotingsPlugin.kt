@@ -1,14 +1,35 @@
 package com.example.voteapp.server.votings
 
+import com.example.voteapp.server.votings.data.ExposedVotingRepository
+import com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase
+import com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase
 import com.example.voteapp.server.votings.domain.usecase.GetVotingsUseCase
+import com.example.voteapp.server.votings.domain.usecase.GetVotingDetailsUseCase
+import com.example.voteapp.server.votings.domain.usecase.GetVotingHistoryUseCase
+import com.example.voteapp.server.votings.domain.usecase.InviteUseCase
+import com.example.voteapp.server.votings.domain.usecase.VoteUseCase
+import io.ktor.server.application.Application
 
-import io.ktor.server.application.*
-
-// Плейсхолдер: при желании можно будет вынести в отдельный plugin.
 fun Application.installVotings() {
-    val repository = com.example.voteapp.server.votings.data.ExposedVotingRepository()
-    val useCase = GetVotingsUseCase(repository)
-    configureVotingsRouting(useCase)
+    val repository = ExposedVotingRepository()
+    
+    val getVotingsUseCase = GetVotingsUseCase(repository)
+    val createVotingUseCase = CreateVotingUseCase(repository)
+    val voteUseCase = VoteUseCase(repository)
+    val getResultsUseCase = GetResultsUseCase(repository)
+    val getVotingDetailsUseCase = GetVotingDetailsUseCase(repository)
+    val getVotingHistoryUseCase = GetVotingHistoryUseCase(repository)
+    val inviteUseCase = InviteUseCase(repository)
+    
+    configureVotingsRouting(
+        getVotingsUseCase = getVotingsUseCase,
+        createVotingUseCase = createVotingUseCase,
+        voteUseCase = voteUseCase,
+        getResultsUseCase = getResultsUseCase,
+        getVotingDetailsUseCase = getVotingDetailsUseCase,
+        getVotingHistoryUseCase = getVotingHistoryUseCase,
+        inviteUseCase = inviteUseCase
+    )
 }
 
 

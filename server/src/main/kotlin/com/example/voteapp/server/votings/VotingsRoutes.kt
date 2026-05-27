@@ -37,6 +37,9 @@ fun Route.v1Votings(
     createVotingUseCase: CreateVotingUseCase,
     voteUseCase: VoteUseCase,
     getResultsUseCase: GetResultsUseCase,
+    getVotingDetailsUseCase: GetVotingDetailsUseCase,
+    getVotingHistoryUseCase: GetVotingHistoryUseCase,
+    inviteUseCase: InviteUseCase,
 ) {
     get("/votings") {
         val status = call.request.queryParameters["status"]
@@ -50,9 +53,7 @@ fun Route.v1Votings(
     authenticate("firebase-jwt") {
         get("/votings/{id}") {
             val votingId = UUID.fromString(call.parameters["id"] ?: error("Missing id"))
-            val voting = GetVotingDetailsUseCase(
-                repository = com.example.voteapp.server.votings.data.ExposedVotingRepository()
-            )(votingId)
+            val voting = getVotingDetailsUseCase(votingId)
             call.respond(voting)
         }
 
@@ -60,10 +61,7 @@ fun Route.v1Votings(
             val userId = call.principal<UserIdPrincipal>()?.name
                 ?: throw io.ktor.server.auth.AuthenticationException("unauthorized")
 
-
-            val history = GetVotingHistoryUseCase(
-                repository = com.example.voteapp.server.votings.data.ExposedVotingRepository()
-            )(UUID.fromString(userId))
+            val history = getVotingHistoryUseCase(UUID.fromString(userId))
             call.respond(history)
         }
 
@@ -72,13 +70,9 @@ fun Route.v1Votings(
             val userId = call.principal<UserIdPrincipal>()?.name
                 ?: throw io.ktor.server.auth.AuthenticationException("unauthorized")
 
+            val payload = call.receive<InvitePayload>()
 
-            val payload = call.receive<com.example.voteapp.server.votings.models.InvitePayload>()
-
-            // Минимальный вариант без таблицы invites:
-            val response = InviteUseCase(
-                repository = com.example.voteapp.server.votings.data.ExposedVotingRepository()
-            )(votingId, payload.email)
+            val response = inviteUseCase(votingId, payload.email)
 
             call.respond(response)
         }
@@ -124,10 +118,21 @@ fun io.ktor.server.application.Application.configureVotingsRouting(
     createVotingUseCase: CreateVotingUseCase,
     voteUseCase: VoteUseCase,
     getResultsUseCase: GetResultsUseCase,
+    getVotingDetailsUseCase: GetVotingDetailsUseCase,
+    getVotingHistoryUseCase: GetVotingHistoryUseCase,
+    inviteUseCase: InviteUseCase,
 ) {
     routing {
         route("/api/v1") {
-            v1Votings(getVotingsUseCase, createVotingUseCase, voteUseCase, getResultsUseCase)
+            v1Votings(
+                getVotingsUseCase = getVotingsUseCase,
+                createVotingUseCase = createVotingUseCase,
+                voteUseCase = voteUseCase,
+                getResultsUseCase = getResultsUseCase,
+                getVotingDetailsUseCase = getVotingDetailsUseCase,
+                getVotingHistoryUseCase = getVotingHistoryUseCase,
+                inviteUseCase = inviteUseCase
+            )
         }
     }
 }
