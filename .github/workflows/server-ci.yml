@@ -4,12 +4,12 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'server/**'
+      - '**'
       - '.github/workflows/server-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'server/**'
+      - '**'
 
 jobs:
   test:
@@ -43,10 +43,9 @@ jobs:
           cache: 'gradle'
 
       - name: Grant execute permission
-        run: chmod +x server/gradlew
+        run: chmod +x gradlew
 
       - name: Run tests
-        working-directory: server
         env:
           DATABASE_URL: jdbc:postgresql://localhost:5432/voteapp_test
           DATABASE_USER: test_user
@@ -54,7 +53,6 @@ jobs:
         run: ./gradlew test
 
       - name: Build
-        working-directory: server
         run: ./gradlew build -x test
 
       - name: Upload test results
@@ -62,11 +60,11 @@ jobs:
         if: always()
         with:
           name: test-results
-          path: server/build/test-results/
+          path: build/test-results/
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report
-          path: server/build/reports/
+          path: build/reports/
