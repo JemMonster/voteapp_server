@@ -25,9 +25,11 @@ import java.util.UUID
 class VotingsInviteRouteTest {
 
     @Test
-    fun `POST /api/v1/votings id invite without token returns 401`() = testApplication {
-        val repository = FakeVotingRepository(emailExists = true)
-        val inviteUseCase = InviteUseCase(repository)
+    fun `POST /api/v1/votings/{id}/invite without token returns 401`() = testApplication {
+        val repo = FakeVotingRepository(emailExists = true)
+        val dummyCreate = com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase(repo)
+        val dummyVote = com.example.voteapp.server.votings.domain.usecase.VoteUseCase(repo)
+        val dummyResults = com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase(repo)
 
         application {
             install(ContentNegotiation) {
@@ -37,13 +39,12 @@ class VotingsInviteRouteTest {
             install(Authentication) {
                 bearer("firebase-jwt") {
                     realm = "test"
-                    // no authenticate => unauthorized
+                    // no authenticate => 401
                 }
             }
 
             configureStatusPages()
-            // configure routes via VotingsRoutes extension in next step
-            // placeholder: route registration is part of Phase 3 endpoint work
+            configureVotingsRouting(getVotingsUseCase = { emptyList() }, createVotingUseCase = dummyCreate, voteUseCase = dummyVote, getResultsUseCase = dummyResults)
         }
 
         val response = client.post("/api/v1/votings/${UUID.randomUUID()}/invite") {
@@ -59,17 +60,7 @@ class VotingsInviteRouteTest {
     ) : VotingRepository {
         override suspend fun getVotings() = emptyList<com.example.voteapp.server.votings.domain.model.Voting>()
         override suspend fun create(dto: com.example.voteapp.server.votings.models.NewVoting, creatorId: UUID) =
-            com.example.voteapp.server.votings.domain.model.Voting(
-                id = creatorId,
-                title = dto.title,
-                description = dto.description.orEmpty(),
-                type = dto.type,
-                status = VotingStatus.ACTIVE,
-                imageUrl = dto.imageUrl,
-                endsAt = kotlinx.datetime.Clock.System.now().toKotlinLocalDateTime(),
-                totalVotes = 0,
-                hasVoted = false
-            )
+            throw UnsupportedOperationException()
 
         override suspend fun vote(
             id: UUID,
@@ -89,4 +80,5 @@ class VotingsInviteRouteTest {
         }
     }
 }
+
 

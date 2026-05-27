@@ -22,9 +22,11 @@ import java.util.UUID
 class VotingsHistoryRouteTest {
 
     @Test
-    fun `GET history without token returns 401`() = testApplication {
-        val repository = FakeVotingRepository()
-        val useCase = GetVotingHistoryUseCase(repository)
+    fun `GET /api/v1/votings/history without token returns 401`() = testApplication {
+        val repo = FakeVotingRepository()
+        val dummyCreate = com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase(repo)
+        val dummyVote = com.example.voteapp.server.votings.domain.usecase.VoteUseCase(repo)
+        val dummyResults = com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase(repo)
 
         application {
             install(ContentNegotiation) {
@@ -34,12 +36,12 @@ class VotingsHistoryRouteTest {
             install(Authentication) {
                 bearer("firebase-jwt") {
                     realm = "test"
-                    // unauthorized
+                    // no authenticate => 401
                 }
             }
 
             configureStatusPages()
-            // route registration is part of Phase 3 endpoint work
+            configureVotingsRouting(getVotingsUseCase = { emptyList() }, createVotingUseCase = dummyCreate, voteUseCase = dummyVote, getResultsUseCase = dummyResults)
         }
 
         val response = client.get("/api/v1/votings/history")
@@ -48,26 +50,17 @@ class VotingsHistoryRouteTest {
 
     private class FakeVotingRepository : VotingRepository {
         override suspend fun getVotings() = emptyList<com.example.voteapp.server.votings.domain.model.Voting>()
-        override suspend fun create(
-            dto: com.example.voteapp.server.votings.models.NewVoting,
-            creatorId: UUID
-        ) = throw UnsupportedOperationException()
-
-        override suspend fun vote(
-            id: UUID,
-            userId: UUID,
-            payload: com.example.voteapp.server.votings.models.VotePayload
-        ) = throw UnsupportedOperationException()
-
+        override suspend fun create(dto: com.example.voteapp.server.votings.models.NewVoting, creatorId: UUID) =
+            throw UnsupportedOperationException()
+        override suspend fun vote(id: UUID, userId: UUID, payload: com.example.voteapp.server.votings.models.VotePayload) =
+            throw UnsupportedOperationException()
         override suspend fun getResults(id: UUID) = throw UnsupportedOperationException()
         override suspend fun getById(id: UUID) = null
-
         override suspend fun getVotingById(id: UUID) = null
         override suspend fun getVotingHistory(userId: UUID) = emptyList<com.example.voteapp.server.votings.domain.model.Voting>()
-        override suspend fun invite(
-            votingId: UUID,
-            email: String
-        ) = throw UnsupportedOperationException()
+        override suspend fun invite(votingId: UUID, email: String) =
+            throw UnsupportedOperationException()
     }
 }
+
 
