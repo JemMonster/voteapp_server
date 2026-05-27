@@ -12,7 +12,12 @@ interface VotingRepository {
     suspend fun vote(id: UUID, userId: UUID, payload: VotePayload): VotingResult
     suspend fun getResults(id: UUID): VotingResult
     suspend fun getById(id: UUID): Voting?
+
+    suspend fun getVotingById(id: UUID): Voting?
+    suspend fun getVotingHistory(userId: UUID): List<Voting>
+    suspend fun invite(votingId: UUID, email: String): com.example.voteapp.server.votings.models.InviteResponse
 }
+
 
 
 

@@ -47,6 +47,47 @@ class ExposedVotingRepository : VotingRepository {
                 ?.let { mapVotingRow(it) }
         }
 
+    override suspend fun getVotingById(id: UUID): Voting? {
+        return getById(id)
+    }
+
+    override suspend fun getVotingHistory(userId: UUID): List<Voting> =
+        newSuspendedTransaction(Dispatchers.IO) {
+            Votings
+                .join(Votes, JoinType.INNER, additionalConstraint = { Votings.id eq Votes.votingId })
+                .slice(Votings.columns)
+                .select { Votes.userId eq userId }
+                .withDistinct()
+                .map { mapVotingRow(it) }
+        }
+
+    override suspend fun invite(votingId: UUID, email: String): com.example.voteapp.server.votings.models.InviteResponse {
+        return newSuspendedTransaction(Dispatchers.IO) {
+            val emailTrimmed = email.trim()
+            require(emailTrimmed.isNotBlank()) { "Email is required" }
+
+            val votingExists = Votings.select { Votings.id eq votingId }.limit(1).any()
+            if (!votingExists) {
+                throw com.example.voteapp.server.votings.domain.usecase.VotingNotFoundException(votingId)
+            }
+
+            val userRow = com.example.voteapp.server.db.Users.select { com.example.voteapp.server.db.Users.email eq emailTrimmed }
+                .limit(1)
+                .firstOrNull()
+
+            if (userRow == null) {
+                throw com.example.voteapp.server.votings.domain.usecase.EmailNotFoundException(emailTrimmed)
+            }
+
+            com.example.voteapp.server.votings.models.InviteResponse(
+                votingId = votingId.leastSignificantBits,
+                email = emailTrimmed,
+                status = "SUCCESS"
+            )
+        }
+    }
+
+
     override suspend fun create(dto: NewVoting, creatorId: UUID): Voting =
         newSuspendedTransaction(Dispatchers.IO) {
             try {
