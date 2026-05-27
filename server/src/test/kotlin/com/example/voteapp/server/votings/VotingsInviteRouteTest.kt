@@ -25,8 +25,49 @@ import java.util.UUID
 class VotingsInviteRouteTest {
 
     @Test
+    fun `POST /api/v1/votings/{id}/invite returns 200`() = testApplication {
+        val repo = FakeVotingRepository(emailExists = true)
+        val dummyCreate = com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase(repo)
+        val dummyVote = com.example.voteapp.server.votings.domain.usecase.VoteUseCase(repo)
+        val dummyResults = com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase(repo)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+
+            install(Authentication) {
+                bearer("firebase-jwt") {
+                    realm = "test"
+                    authenticate {
+                        UserIdPrincipal("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                    }
+                }
+            }
+
+            configureStatusPages()
+            configureVotingsRouting(
+                getVotingsUseCase = { emptyList() },
+                createVotingUseCase = dummyCreate,
+                voteUseCase = dummyVote,
+                getResultsUseCase = dummyResults,
+            )
+        }
+
+        val votingId = UUID.randomUUID()
+        val response = client.post("/api/v1/votings/$votingId/invite") {
+            header(HttpHeaders.Authorization, "Bearer test")
+            contentType(ContentType.Application.Json)
+            setBody(Json.encodeToString(InvitePayload.serializer(), InvitePayload("a@test.com")))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
     fun `POST /api/v1/votings/{id}/invite without token returns 401`() = testApplication {
         val repo = FakeVotingRepository(emailExists = true)
+
         val dummyCreate = com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase(repo)
         val dummyVote = com.example.voteapp.server.votings.domain.usecase.VoteUseCase(repo)
         val dummyResults = com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase(repo)

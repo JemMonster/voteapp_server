@@ -6,9 +6,11 @@ import com.example.voteapp.server.votings.domain.port.VotingRepository
 import com.example.voteapp.server.votings.domain.usecase.GetVotingHistoryUseCase
 import com.example.voteapp.server.votings.models.VotingStatus
 import com.example.voteapp.server.votings.models.VotingType
+
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import com.example.voteapp.server.plugins.UserIdPrincipal
 import io.ktor.server.auth.*
 import io.ktor.server.auth.bearer
 import io.ktor.server.plugins.contentnegotiation.*
@@ -22,8 +24,43 @@ import java.util.UUID
 class VotingsHistoryRouteTest {
 
     @Test
+    fun `GET /api/v1/votings/history returns 200`() = testApplication {
+        val repo = FakeVotingRepository()
+        val dummyCreate = com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase(repo)
+        val dummyVote = com.example.voteapp.server.votings.domain.usecase.VoteUseCase(repo)
+        val dummyResults = com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase(repo)
+
+        application {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+
+            install(Authentication) {
+                bearer("firebase-jwt") {
+                    realm = "test"
+                    authenticate {
+                        UserIdPrincipal("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                    }
+                }
+            }
+
+            configureStatusPages()
+            configureVotingsRouting(
+                getVotingsUseCase = { emptyList() },
+                createVotingUseCase = dummyCreate,
+                voteUseCase = dummyVote,
+                getResultsUseCase = dummyResults,
+            )
+        }
+
+        val response = client.get("/api/v1/votings/history")
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
     fun `GET /api/v1/votings/history without token returns 401`() = testApplication {
         val repo = FakeVotingRepository()
+
         val dummyCreate = com.example.voteapp.server.votings.domain.usecase.CreateVotingUseCase(repo)
         val dummyVote = com.example.voteapp.server.votings.domain.usecase.VoteUseCase(repo)
         val dummyResults = com.example.voteapp.server.votings.domain.usecase.GetResultsUseCase(repo)

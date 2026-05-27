@@ -25,6 +25,7 @@ import org.junit.Test
 
 class VotingsRouteTest {
 
+
     @Test
     fun `GET /api/v1/votings returns 200 with empty list`() = testApplication {
         val getVotingsUseCase = GetVotingsUseCase { emptyList() }
