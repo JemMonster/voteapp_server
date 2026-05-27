@@ -19,24 +19,39 @@ fun Application.configureStatusPages() {
 
     install(StatusPages) {
         exception<ValidationException> { call, _ ->
-            call.respond(HttpStatusCode.BadRequest, mapOf("message" to (it.message ?: "Validation error")))
+            call.respond(HttpStatusCode.BadRequest, mapOf(
+                "error" to (it.message ?: "Validation error"),
+                "code" to HttpStatusCode.BadRequest.value
+            ))
         }
 
         exception<VotingNotFoundException> { call, _ ->
-            call.respond(HttpStatusCode.NotFound, mapOf("message" to (it.message ?: "Voting not found")))
+            call.respond(HttpStatusCode.NotFound, mapOf(
+                "error" to (it.message ?: "Voting not found"),
+                "code" to HttpStatusCode.NotFound.value
+            ))
         }
 
         exception<VotingAlreadyClosedException> { call, _ ->
-            call.respond(HttpStatusCode.BadRequest, mapOf("message" to (it.message ?: "Voting already closed")))
+            call.respond(HttpStatusCode.BadRequest, mapOf(
+                "error" to (it.message ?: "Voting already closed"),
+                "code" to HttpStatusCode.BadRequest.value
+            ))
         }
 
         exception<AlreadyVotedException> { call, _ ->
-            call.respond(HttpStatusCode.Conflict, mapOf("message" to (it.message ?: "User already voted")))
+            call.respond(HttpStatusCode.BadRequest, mapOf(
+                "error" to (it.message ?: "User already voted"),
+                "code" to HttpStatusCode.BadRequest.value
+            ))
         }
 
         exception<Throwable> { call, cause ->
             log.error("Unhandled error", cause)
-            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Internal server error"))
+            call.respond(HttpStatusCode.InternalServerError, mapOf(
+                "error" to "Internal server error",
+                "code" to HttpStatusCode.InternalServerError.value
+            ))
         }
     }
 }

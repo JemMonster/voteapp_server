@@ -77,7 +77,10 @@ fun Application.configureAuth() {
             }
 
             challenge { _, _ ->
-                call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "unauthorized"))
+                call.respond(HttpStatusCode.Unauthorized, mapOf(
+                    "error" to "unauthorized",
+                    "code" to HttpStatusCode.Unauthorized.value
+                ))
             }
         }
     }
