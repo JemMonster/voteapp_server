@@ -38,6 +38,25 @@ class ExposedVotingRepository : VotingRepository {
             Votings.selectAll().map { mapVotingRow(it) }
         }
 
+    override suspend fun getVotingsFiltered(status: String?, type: String?): List<Voting> =
+        newSuspendedTransaction(Dispatchers.IO) {
+            val statusEnum = status?.let { VotingStatus.valueOf(it.uppercase()) }
+            val typeEnum = type?.let { VotingType.valueOf(it.uppercase()) }
+
+            Votings
+                .selectAll()
+                .apply {
+                    if (statusEnum != null) {
+                        andWhere { Votings.status eq statusEnum }
+                    }
+                    if (typeEnum != null) {
+                        andWhere { Votings.type eq typeEnum }
+                    }
+                }
+                .map { mapVotingRow(it) }
+        }
+
+
     override suspend fun getById(id: UUID): Voting? =
         newSuspendedTransaction(Dispatchers.IO) {
             Votings

@@ -39,13 +39,12 @@ fun Route.v1Votings(
     getResultsUseCase: GetResultsUseCase,
 ) {
     get("/votings") {
-        val status = call.request.queryParameters["status"] ?: "active"
+        val status = call.request.queryParameters["status"]
         val type = call.request.queryParameters["type"]
 
-        // Пока репозиторий возвращает все голосования; фильтрация будет реализована на слое use-case/repository.
-        // Для совместимости контрактов возвращаем текущий набор.
-        val votings = getVotingsUseCase()
+        val votings = getVotingsUseCase(status, type)
         call.respond(votings)
+
     }
 
     authenticate("firebase-jwt") {
@@ -59,7 +58,8 @@ fun Route.v1Votings(
 
         get("/votings/history") {
             val userId = call.principal<UserIdPrincipal>()?.name
-                ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
+                ?: throw io.ktor.server.auth.AuthenticationException("unauthorized")
+
 
             val history = GetVotingHistoryUseCase(
                 repository = com.example.voteapp.server.votings.data.ExposedVotingRepository()
@@ -70,7 +70,8 @@ fun Route.v1Votings(
         post("/votings/{id}/invite") {
             val votingId = UUID.fromString(call.parameters["id"] ?: error("Missing id"))
             val userId = call.principal<UserIdPrincipal>()?.name
-                ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
+                ?: throw io.ktor.server.auth.AuthenticationException("unauthorized")
+
 
             val payload = call.receive<com.example.voteapp.server.votings.models.InvitePayload>()
 
@@ -84,9 +85,10 @@ fun Route.v1Votings(
 
         post("/votings") {
             val userId = call.principal<UserIdPrincipal>()?.name
-                ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
+                ?: throw io.ktor.server.auth.AuthenticationException("unauthorized")
 
             val dto = call.receive<NewVoting>()
+
 
             if (dto.title.isBlank()) {
                 throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Title is required")
@@ -102,7 +104,7 @@ fun Route.v1Votings(
             val votingId = UUID.fromString(call.parameters["id"] ?: error("Missing id"))
 
             val userId = call.principal<UserIdPrincipal>()?.name
-                ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
+                ?: throw io.ktor.server.auth.AuthenticationException("unauthorized")
 
             val payload = call.receive<VotePayload>()
             val result = voteUseCase(votingId, UUID.fromString(userId), payload)

@@ -180,6 +180,8 @@ class VotingsRouteTest {
 
     private class FakeVotingRepository : VotingRepository {
         override suspend fun getVotings(): List<com.example.voteapp.server.votings.domain.model.Voting> = emptyList()
+        override suspend fun getVotingsFiltered(status: String?, type: String?) = emptyList<com.example.voteapp.server.votings.domain.model.Voting>()
+
         override suspend fun create(dto: NewVoting, creatorId: java.util.UUID): com.example.voteapp.server.votings.domain.model.Voting {
             return com.example.voteapp.server.votings.domain.model.Voting(
                 id = java.util.UUID.randomUUID(),

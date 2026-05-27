@@ -59,6 +59,8 @@ class VotingsInviteRouteTest {
         private val emailExists: Boolean,
     ) : VotingRepository {
         override suspend fun getVotings() = emptyList<com.example.voteapp.server.votings.domain.model.Voting>()
+        override suspend fun getVotingsFiltered(status: String?, type: String?) = emptyList<com.example.voteapp.server.votings.domain.model.Voting>()
+
         override suspend fun create(dto: com.example.voteapp.server.votings.models.NewVoting, creatorId: UUID) =
             throw UnsupportedOperationException()
 
