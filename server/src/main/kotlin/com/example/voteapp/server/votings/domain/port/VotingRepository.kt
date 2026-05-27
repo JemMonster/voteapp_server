@@ -4,6 +4,8 @@ import com.example.voteapp.server.votings.domain.model.Voting
 import com.example.voteapp.server.votings.models.NewVoting
 import com.example.voteapp.server.votings.models.VotePayload
 import com.example.voteapp.server.votings.models.VotingResult
+import com.example.voteapp.server.votings.models.UpdateVotingRequest
+import com.example.voteapp.server.votings.models.VotingOption
 import java.util.UUID
 
 interface VotingRepository {
@@ -18,6 +20,14 @@ interface VotingRepository {
     suspend fun getVotingById(id: UUID): Voting?
     suspend fun getVotingHistory(userId: UUID): List<Voting>
     suspend fun invite(votingId: UUID, email: String): com.example.voteapp.server.votings.models.InviteResponse
+    
+    // New methods for voting management
+    suspend fun update(votingId: UUID, creatorId: UUID, request: UpdateVotingRequest): Voting
+    suspend fun delete(votingId: UUID)
+    suspend fun hasUserVoted(votingId: UUID, userId: UUID): Boolean
+    suspend fun updateVote(votingId: UUID, userId: UUID, optionIds: List<String>)
+    suspend fun removeVote(votingId: UUID, userId: UUID)
+    suspend fun getVotingOptions(votingId: UUID): List<VotingOption>
 }
 
 

@@ -8,6 +8,9 @@ import com.example.voteapp.server.votings.domain.usecase.GetVotingDetailsUseCase
 import com.example.voteapp.server.votings.domain.usecase.GetVotingHistoryUseCase
 import com.example.voteapp.server.votings.domain.usecase.InviteUseCase
 import com.example.voteapp.server.votings.domain.usecase.VoteUseCase
+import com.example.voteapp.server.votings.domain.usecase.UpdateVotingUseCase
+import com.example.voteapp.server.votings.domain.usecase.DeleteVotingUseCase
+import com.example.voteapp.server.votings.domain.usecase.UpdateVoteUseCase
 import io.ktor.server.application.Application
 
 fun Application.installVotings() {
@@ -20,6 +23,9 @@ fun Application.installVotings() {
     val getVotingDetailsUseCase = GetVotingDetailsUseCase(repository)
     val getVotingHistoryUseCase = GetVotingHistoryUseCase(repository)
     val inviteUseCase = InviteUseCase(repository)
+    val updateVotingUseCase = UpdateVotingUseCase(repository)
+    val deleteVotingUseCase = DeleteVotingUseCase(repository)
+    val updateVoteUseCase = UpdateVoteUseCase(repository)
     
     configureVotingsRouting(
         getVotingsUseCase = getVotingsUseCase,
@@ -28,7 +34,10 @@ fun Application.installVotings() {
         getResultsUseCase = getResultsUseCase,
         getVotingDetailsUseCase = getVotingDetailsUseCase,
         getVotingHistoryUseCase = getVotingHistoryUseCase,
-        inviteUseCase = inviteUseCase
+        inviteUseCase = inviteUseCase,
+        updateVotingUseCase = updateVotingUseCase,
+        deleteVotingUseCase = deleteVotingUseCase,
+        updateVoteUseCase = updateVoteUseCase
     )
 }
 

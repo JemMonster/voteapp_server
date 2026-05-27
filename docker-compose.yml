@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: voteapp-db
+    environment:
+      POSTGRES_DB: voteapp
+      POSTGRES_USER: voteapp_user
+      POSTGRES_PASSWORD: voteapp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voteapp_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voteapp-server
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: voteapp
+      DB_USER: voteapp_user
+      DB_PASSWORD: voteapp_password
+      FIREBASE_SERVICE_ACCOUNT_JSON_PATH: /app/firebase-service-account.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:

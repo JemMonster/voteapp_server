@@ -60,7 +60,13 @@ fun Application.module() {
 
     configureFlyway()
     configureStatusPages()
-    configureAuth()
+    
+    // Initialize Auth modules
+    val authRepository = com.example.voteapp.server.auth.ExposedAuthRepository()
+    val registerUserUseCase = com.example.voteapp.server.auth.RegisterUserUseCase(authRepository)
+    val loginUseCase = com.example.voteapp.server.auth.LoginUseCase(authRepository)
+    
+    configureAuth(registerUserUseCase, loginUseCase)
     configureRouting()
     configureMonitoring()
 }

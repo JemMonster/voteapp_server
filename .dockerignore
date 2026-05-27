@@ -1,0 +1,28 @@
+# Gradle
+.gradle
+build/
+!build/libs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+*.log
+
+# Firebase
+firebase-service-account.json
+*.json
+
+# Environment
+.env
+.env.local
+
+# Test
+reports/
+test-output/
+
+# Docker
+*.pid

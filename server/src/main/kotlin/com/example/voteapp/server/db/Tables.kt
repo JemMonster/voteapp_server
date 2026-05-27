@@ -10,7 +10,7 @@ import java.util.UUID
 
 object Users : UUIDTable() {
     val email = varchar("email", 255).uniqueIndex()
-    val name = varchar("name", 100)
+    val name = varchar("name", 100).nullable()
     override val primaryKey = super.primaryKey
 }
 
@@ -35,7 +35,11 @@ object VotingOptions : UUIDTable("voting_options") {
 object Votes : Table("votes") {
     val userId = uuid("user_id") references Users.id
     val votingId = uuid("voting_id") references Votings.id
-    val optionIds = text("option_ids") // JSON array of option UUIDs
+    val optionIds = text("option_ids") // Comma-separated option UUIDs
+    val createdAt = timestamp("created_at").clientDefault { java.time.Instant.now() }
+    val updatedAt = timestamp("updated_at").clientDefault { java.time.Instant.now() }
+    
+    override val primaryKey = PrimaryKey(userId, votingId)
 }
 
 enum class VotingType {

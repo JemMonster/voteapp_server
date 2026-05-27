@@ -55,7 +55,10 @@ private fun ensureFirebaseApp(): FirebaseApp {
     )
 }
 
-fun Application.configureAuth() {
+fun Application.configureAuth(
+    registerUserUseCase: com.example.voteapp.server.auth.RegisterUserUseCase,
+    loginUseCase: com.example.voteapp.server.auth.LoginUseCase
+) {
     val log = LoggerFactory.getLogger("AuthPlugin")
 
     install(Authentication) {
@@ -84,5 +87,8 @@ fun Application.configureAuth() {
             }
         }
     }
+    
+    // Configure auth routes
+    configureAuthRoutes(registerUserUseCase, loginUseCase)
 }
 

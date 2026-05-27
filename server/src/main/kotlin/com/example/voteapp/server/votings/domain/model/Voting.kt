@@ -14,6 +14,8 @@ data class Voting(
     val imageUrl: String?,
     val endsAt: LocalDateTime,
     val totalVotes: Int,
-    val hasVoted: Boolean
+    val hasVoted: Boolean,
+    val creatorId: UUID? = null,
+    val createdAt: LocalDateTime? = null
 )
 
