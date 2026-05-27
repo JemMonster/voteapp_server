@@ -33,11 +33,22 @@ fun Route.v1Votings(
     getResultsUseCase: GetResultsUseCase,
 ) {
     get("/votings") {
+        val status = call.request.queryParameters["status"] ?: "active"
+        val type = call.request.queryParameters["type"]
+
+        // Пока репозиторий возвращает все голосования; фильтрация будет реализована на слое use-case/repository.
+        // Для совместимости контрактов возвращаем текущий набор.
         val votings = getVotingsUseCase()
         call.respond(votings)
     }
 
     authenticate("firebase-jwt") {
+        // TODO (Phase 3): реализовать:
+        // GET /api/v1/votings/{id}
+        // GET /api/v1/votings/history
+        // POST /api/v1/votings/{id}/invite
+        // После создания use-cases/repository methods и миграции invites.
+
         post("/votings") {
             val userId = call.principal<UserIdPrincipal>()?.name
                 ?: throw com.example.voteapp.server.votings.domain.usecase.ValidationException("Unauthorized")
